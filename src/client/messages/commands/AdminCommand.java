@@ -2734,7 +2734,7 @@ public class AdminCommand {
         @Override
         public int execute(MapleClient c, String[] splitted) {
             ReactorScriptManager.getInstance().clearDrops();
-            MapleMonsterInformationProvider.getInstance().reloadDropData();
+            MapleMonsterInformationProvider.getInstance().clearDrops();
             c.getPlayer().dropMessage("重新載入掉落物完成");
             return 1;
         }
