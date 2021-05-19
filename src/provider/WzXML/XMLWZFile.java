@@ -66,7 +66,8 @@ public class XMLWZFile implements MapleDataProvider {
         try {
             fis = new FileInputStream(dataFile);
         } catch (FileNotFoundException e) {
-            throw new RuntimeException("Datafile " + path + " does not exist in " + root.getAbsolutePath());
+            return null;
+//            throw new RuntimeException("Datafile " + path + " does not exist in " + root.getAbsolutePath());
         }
         final XMLDomMapleData domMapleData;
         try {

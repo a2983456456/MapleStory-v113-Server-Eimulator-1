@@ -74,7 +74,7 @@ public class LoginServer {
         try {
             init = new ServerConnection(PORT);//could code world here to seperate them
             init.run();
-            System.out.println("Login   1: Listening on port " + PORT);
+            System.out.println("Login    : Listening on port " + PORT);
         } catch (final Exception e) {
             System.err.println("Binding to port " + PORT + " failed" + e);
         }

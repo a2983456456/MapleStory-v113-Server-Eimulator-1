@@ -101,7 +101,7 @@ public class ChannelServer implements Serializable {
     }
 
     public final void loadEvents() {
-        if (events.size() != 0) {
+        if (!events.isEmpty()) {
             return;
         }
         events.put(MapleEventType.CokePlay, new MapleCoconut(channel, MapleEventType.CokePlay.mapids));
@@ -113,6 +113,7 @@ public class ChannelServer implements Serializable {
     }
 
     public final void run_startup_configurations() {
+        long startTime = System.currentTimeMillis();
         setChannel(channel); //instances.put
         try {
             expRate = Integer.parseInt(ServerProperties.getProperty("tms.Exp"));
@@ -123,27 +124,22 @@ public class ChannelServer implements Serializable {
             serverName = ServerProperties.getProperty("tms.ServerName");
             flags = Integer.parseInt(ServerProperties.getProperty("tms.WFlags", "0"));
             adminOnly = Boolean.parseBoolean(ServerProperties.getProperty("tms.Admin", "false"));
-            eventSM = new EventScriptManager(this, ServerProperties.getProperty("tms.Events").split(","));
             port = Short.parseShort(ServerProperties.getProperty("tms.Port" + channel, String.valueOf(DEFAULT_PORT + channel)));
-
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
         ip = ServerProperties.getProperty("tms.IP") + ":" + port;
-
         players = new PlayerStorage(channel);
         loadEvents();
+        init = new ServerConnection(port, 1, channel);//could code world here to seperate them
+        init.run();
+        this.serverHandler = new MapleServerHandler(channel, false);
+        System.out.println("Channel " + channel + ": Listening on port " + port + "");
+    }
 
-        try {
-            init = new ServerConnection(port, 1 , channel);//could code world here to seperate them
-            init.run();
-            this.serverHandler = new MapleServerHandler(channel, false);
-            System.out.println("Channel " + channel + ": Listening on port " + port + "");
-            eventSM.init();
-        } catch (Exception e) {
-            System.out.println("Binding to port " + port + " failed (ch: " + getChannel() + ")" + e);
-        }
+    public void initEventScriptManager() {
+        eventSM = new EventScriptManager(this, ServerProperties.getProperty("tms.Events").split(","));
+        eventSM.init();
     }
 
     public final void shutdown(Object threadToNotify) {
@@ -158,10 +154,10 @@ public class ChannelServer implements Serializable {
 
         closeAllMerchant();
 
-		System.out.println("Channel " + channel + ", Saving hired fishings...");
-		
-		closeAllFishing();
-		
+        System.out.println("Channel " + channel + ", Saving hired fishings...");
+
+        closeAllFishing();
+
         System.out.println("Channel " + channel + ", Saving characters...");
 
         getPlayerStorage().disconnectAll();
@@ -180,7 +176,6 @@ public class ChannelServer implements Serializable {
 //            }
 //        }
     }
-
 
     public final boolean hasFinishedShutdown() {
         return finishedShutdown;
@@ -244,7 +239,7 @@ public class ChannelServer implements Serializable {
     public final int getExpRate() {
         return expRate;
     }
-    
+
     public final void setExpRate(final int expRate) {
         this.expRate = expRate;
     }
@@ -308,6 +303,12 @@ public class ChannelServer implements Serializable {
         this.dropRate = dropRate;
     }
 
+    public static final void loadEventScriptManager() {
+        for (ChannelServer cs : ChannelServer.getAllInstances()) {
+            cs.initEventScriptManager();
+        }
+    }
+
     public static final void startChannel_Main() {
         serverStartTime = System.currentTimeMillis();
 
@@ -315,12 +316,11 @@ public class ChannelServer implements Serializable {
             newInstance(ServerConstants.Channel_Key[i], i + 1).run_startup_configurations();
         }
     }
-    
-    public static final void startChannel(final int channel) 
-    {
+
+    public static final void startChannel(final int channel) {
         serverStartTime = System.currentTimeMillis();
         for (int i = 0; i < Integer.parseInt(ServerProperties.getProperty("tms.Count", "0")); i++) {
-            if(channel == i + 1) {
+            if (channel == i + 1) {
                 newInstance(ServerConstants.Channel_Key[i], i + 1).run_startup_configurations();
                 break;
             }
@@ -412,7 +412,6 @@ public class ChannelServer implements Serializable {
         }
         return contains;
     }
-	
 
     public final List<HiredMerchant> searchMerchant(final int itemSearch) {
         final List<HiredMerchant> list = new LinkedList<HiredMerchant>();
@@ -431,8 +430,8 @@ public class ChannelServer implements Serializable {
         }
         return list;
     }
-	
-	public final void closeAllFishing() {
+
+    public final void closeAllFishing() {
         fishingLock.writeLock().lock();
         try {
             final Iterator<HiredFishing> fishings_ = fishings.values().iterator();
@@ -444,8 +443,8 @@ public class ChannelServer implements Serializable {
             fishingLock.writeLock().unlock();
         }
     }
-	
-	public final int addFishing(final HiredFishing hFishing) {
+
+    public final int addFishing(final HiredFishing hFishing) {
         fishingLock.writeLock().lock();
 
         int runningmer = 0;
@@ -477,7 +476,7 @@ public class ChannelServer implements Serializable {
             final Iterator itr = fishings.values().iterator();
 
             while (itr.hasNext()) {
-				HiredFishing Fishing_itr = ((HiredFishing) itr.next());
+                HiredFishing Fishing_itr = ((HiredFishing) itr.next());
                 if (Fishing_itr.getOwnerAccId() == accid) {
                     contains = Fishing_itr;
                     break;
@@ -605,14 +604,13 @@ public class ChannelServer implements Serializable {
         broadcastGMPacket(new ByteArrayMaplePacket(message));
     }
 
-
-   public void saveAll() {
-    int ppl = 0;
-    for (Iterator i$ = this.players.getAllCharacters().iterator(); i$.hasNext(); ) { MapleCharacter chr = (MapleCharacter)i$.next();
-      ++ppl;
-      chr.saveToDB(false, false);
+    public void saveAll() {
+        int ppl = 0;
+        for (Iterator i$ = this.players.getAllCharacters().iterator(); i$.hasNext();) {
+            MapleCharacter chr = (MapleCharacter) i$.next();
+            ++ppl;
+            chr.saveToDB(false, false);
+        }
+        System.out.println("[自動存檔] 已經將頻道 " + this.channel + " 的 " + ppl + " 個玩家保存到數據中.");
     }
-    System.out.println("[自動存檔] 已經將頻道 " + this.channel + " 的 " + ppl + " 個玩家保存到數據中.");
-  }
- }
-
+}

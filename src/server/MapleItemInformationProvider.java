@@ -56,7 +56,7 @@ public class MapleItemInformationProvider {
     protected final Map<Integer, String> msgCache = new HashMap<Integer, String>();
     protected final Map<Integer, MapleInventoryType> inventoryTypeCache = new HashMap<>();
     protected final Map<Integer, Short> petFlagInfo = new HashMap<Integer, Short>();
-	
+
     protected final Map<Integer, Map<String, Integer>> SkillStatsCache = new HashMap<Integer, Map<String, Integer>>();
     protected final Map<Integer, Byte> consumeOnPickupCache = new HashMap<Integer, Byte>();
     protected final Map<Integer, Boolean> dropRestrictionCache = new HashMap<Integer, Boolean>();
@@ -77,8 +77,9 @@ public class MapleItemInformationProvider {
     protected final Map<Integer, Pair<Integer, List<StructRewardItem>>> RewardItem = new HashMap<Integer, Pair<Integer, List<StructRewardItem>>>();
     protected final Map<Byte, StructSetItem> setItems = new HashMap<Byte, StructSetItem>();
     protected final Map<Integer, Pair<Integer, List<Integer>>> questItems = new HashMap<Integer, Pair<Integer, List<Integer>>>();
-	protected final Map<Integer, String> faceList = new HashMap();
-	protected final Map<Integer, String> hairList = new HashMap();
+    protected final Map<Integer, String> faceList = new HashMap();
+    protected final Map<Integer, String> hairList = new HashMap();
+    private boolean initStyle = false;
 
     protected MapleItemInformationProvider() {
         System.out.println("Loading MapleItemInformationProvider :::");
@@ -1324,65 +1325,70 @@ public class MapleItemInformationProvider {
         }
         return getItemData(itemId) != null;
     }
-	public final void loadStyles(boolean reload)
-	{
-		if (reload) {
-			hairList.clear();
-			faceList.clear();
-		}
-		if (!hairList.isEmpty() || !faceList.isEmpty()) {
-			return;
-		}
-		final List<String> types = new ArrayList<String>();
-		types.add("Hair");
-		types.add("Face");
-		for (final String type : types) {
-			for (MapleData c : stringData.getData("Eqp.img").getChildByPath("Eqp/" + type)) {
-				try {
-					if (this.equipData.getData(type + "/" + StringUtil.getLeftPaddedStr(new StringBuilder().append(c.getName()).append(".img").toString(), '0', 12)) != null)
-					{
-						int dataid = Integer.parseInt(c.getName());
-						String name = MapleDataTool.getString("name", c, "無名稱");
-						if (type.equals("Hair")) {
-						    hairList.put(dataid, name);
-						} else {
+
+    public final void loadStyles(boolean reload) {
+        if (reload) {
+            initStyle = false;
+            hairList.clear();
+            faceList.clear();
+        }
+        if (initStyle) {
+            return;
+        }
+        final List<String> types = new ArrayList<String>();
+        types.add("Hair");
+        types.add("Face");
+        MapleData tmpFile = null;
+
+        try {
+            for (final String type : types) {
+                for (MapleData c : stringData.getData("Eqp.img").getChildByPath("Eqp/" + type)) {
+                    tmpFile = c;
+                    if (this.equipData.getData(type + "/" + StringUtil.getLeftPaddedStr(new StringBuilder().append(c.getName()).append(".img").toString(), '0', 12)) != null) {
+                        int dataid = Integer.parseInt(c.getName());
+                        String name = MapleDataTool.getString("name", c, "無名稱");
+                        if (type.equals("Hair")) {
+                            hairList.put(dataid, name);
+                        } else {
                             faceList.put(dataid, name);
                         }
-				    }
-				}catch (Exception e) {
-				}
-			}
-		}
-	}
+                    }
+
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("[載入造型] 出錯檔案: " + (tmpFile == null ? "空" : tmpFile.getName()) + System.lineSeparator() + e.getLocalizedMessage());
+        }
+    }
+
     public boolean hairExists(int hair) {
         return hairList.containsKey(hair);
     }
-	
-	public boolean faceExists(int face)
-	{
-		return faceList.containsKey(face);
-	}
-	
-	public final Map<Integer, String> getFaceList()
-	{
-		Map<Integer, String> list = new HashMap();
-		list.putAll(faceList);
-		return list;
-	}
-  
-	public final Map<Integer, String> getHairList()
-	{
-		Map<Integer, String> list = new HashMap();
-		list.putAll(hairList);
-		return list;
-	}
+
+    public boolean faceExists(int face) {
+        return faceList.containsKey(face);
+    }
+
+    public final Map<Integer, String> getFaceList() {
+        Map<Integer, String> list = new HashMap();
+        list.putAll(faceList);
+        return list;
+    }
+
+    public final Map<Integer, String> getHairList() {
+        Map<Integer, String> list = new HashMap();
+        list.putAll(hairList);
+        return list;
+    }
+
     public final boolean isCash(final int itemId) {
         if (getEquipStats(itemId) == null) {
             return getInventoryType(itemId) == MapleInventoryType.CASH;
         }
         return getInventoryType(itemId) == MapleInventoryType.CASH || getEquipStats(itemId).get("cash") > 0;
     }
-	public final MapleInventoryType getInventoryType(int itemId) {
+
+    public final MapleInventoryType getInventoryType(int itemId) {
         if (inventoryTypeCache.containsKey(itemId)) {
             return inventoryTypeCache.get(itemId);
         }
@@ -1416,7 +1422,8 @@ public class MapleItemInformationProvider {
         inventoryTypeCache.put(itemId, ret);
         return ret;
     }
-	public short getPetFlagInfo(int itemId) {
+
+    public short getPetFlagInfo(int itemId) {
 //		System.out.println("ItemID = " + itemId);
         if (this.petFlagInfo.containsKey(itemId)) {
             return (this.petFlagInfo.get(itemId));
@@ -1453,8 +1460,8 @@ public class MapleItemInformationProvider {
         this.petFlagInfo.put(itemId, flag);
         return flag;
     }
-	
-	public boolean isCashItem(int itemId) {
+
+    public boolean isCashItem(int itemId) {
 
         MapleData item = getItemData(itemId);
         if (item == null) {

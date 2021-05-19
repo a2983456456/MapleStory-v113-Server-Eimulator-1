@@ -65,7 +65,7 @@ import tools.FileoutputUtil;
 public class MapleServerHandler extends ChannelInboundHandlerAdapter {
 
     public static final boolean Log_Packets = true;
-    private int world = -1,channel = -1;
+    private int world = -1, channel = -1;
     private boolean cs;
     private final List<String> BlockedIP = new ArrayList<String>();
     private final Map<String, Pair<Long, Byte>> tracker = new ConcurrentHashMap<String, Pair<Long, Byte>>();
@@ -102,6 +102,12 @@ public class MapleServerHandler extends ChannelInboundHandlerAdapter {
         }
         logIPMap.clear();
         try {
+            if (!loggedIPs.exists()) {
+                if (!loggedIPs.getParentFile().exists()) {
+                    loggedIPs.getParentFile().mkdir();
+                }
+                loggedIPs.createNewFile();
+            }
             Scanner sc = new Scanner(loggedIPs);
             while (sc.hasNextLine()) {
                 String line = sc.nextLine().trim();
@@ -226,31 +232,27 @@ public class MapleServerHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
-
-
     public MapleServerHandler() {
         //MBean
     }
 
     /*
     * Multiple worlds
-    */
-    /*
+     */
+ /*
     public MapleServerHandler(int world, int channel) {
         this.processor = PacketProcessor.getProcessor(world, channel);
         this.world = world;
         this.channel = channel;
     }*/
-    
     public MapleServerHandler(final int channel, final boolean cs) {
         this.channel = channel;
         this.cs = cs;
     }
 
-
     @Override
     public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) throws Exception {
-    	if (cause instanceof IOException || cause instanceof ClassCastException) {
+        if (cause instanceof IOException || cause instanceof ClassCastException) {
             return;
         }
         MapleClient client = (MapleClient) ctx.channel().attr(MapleClient.CLIENT_KEY).get();
@@ -325,7 +327,6 @@ public class MapleServerHandler extends ChannelInboundHandlerAdapter {
         ctx.channel().writeAndFlush(LoginPacket.getHello(ServerConstants.MAPLE_VERSION, ivSend, ivRecv));
         ctx.channel().attr(MapleClient.CLIENT_KEY).set(client);
 
-
         StringBuilder sb = new StringBuilder();
         if (channel > -1) {
             sb.append("[Channel Server] Channel ").append(channel).append(" : ");
@@ -336,7 +337,7 @@ public class MapleServerHandler extends ChannelInboundHandlerAdapter {
         }
         sb.append("IoSession opened ").append(address);
         System.out.println(sb.toString());
-		World.Client.addClient(client);
+        World.Client.addClient(client);
 
         FileWriter fw = isLoggedIP(ctx);
         if (fw != null) {
@@ -375,6 +376,7 @@ public class MapleServerHandler extends ChannelInboundHandlerAdapter {
         }
         super.channelInactive(ctx);
     }
+
     @Override
     public void userEventTriggered(final ChannelHandlerContext ctx, final Object evt) throws Exception {
         MapleClient client = (MapleClient) ctx.channel().attr(MapleClient.CLIENT_KEY).get();
@@ -382,6 +384,7 @@ public class MapleServerHandler extends ChannelInboundHandlerAdapter {
             client.sendPing();
         }
     }
+
     @Override
     public void channelRead(final ChannelHandlerContext ctx, final Object message) {
         try {
@@ -401,7 +404,7 @@ public class MapleServerHandler extends ChannelInboundHandlerAdapter {
                         sb.append(tools.HexTool.toString(in)).append("\n").append(tools.HexTool.toStringFromAscii(in));
                         System.out.println(sb.toString());
                     }
-                    final MapleClient c = (MapleClient)  ctx.channel().attr(MapleClient.CLIENT_KEY).get();
+                    final MapleClient c = (MapleClient) ctx.channel().attr(MapleClient.CLIENT_KEY).get();
                     if (c == null || !c.isReceiving()) {
                         return;
                     }
@@ -454,7 +457,6 @@ public class MapleServerHandler extends ChannelInboundHandlerAdapter {
         }
 
     }
-
 
     public static final void handlePacket(final RecvPacketOpcode header, final SeekableLittleEndianAccessor slea, final MapleClient c, final boolean cs) throws Exception {
         switch (header) {
@@ -854,16 +856,16 @@ public class MapleServerHandler extends ChannelInboundHandlerAdapter {
             case USE_HIRED_MERCHANT:
                 HiredMerchantHandler.UseHiredMerchant(slea, c);
                 break;
-			case USE_HIRED_FISHING:
-			    HiredFishingHandler.UseHiredFishing(slea, c);
-				break;
+            case USE_HIRED_FISHING:
+                HiredFishingHandler.UseHiredFishing(slea, c);
+                break;
             case MERCH_ITEM_STORE:
-			    final int conv = c.getPlayer().getConversation();
-				if(conv == 3){
+                final int conv = c.getPlayer().getConversation();
+                if (conv == 3) {
                     HiredMerchantHandler.MerchantItemStore(slea, c);
-				} else {
-					HiredFishingHandler.FishingItemStore(slea, c);
-				}
+                } else {
+                    HiredFishingHandler.FishingItemStore(slea, c);
+                }
                 break;
             case CANCEL_DEBUFF:
                 // Ignore for now

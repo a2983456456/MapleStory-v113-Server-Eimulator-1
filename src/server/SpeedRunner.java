@@ -36,12 +36,16 @@ public class SpeedRunner {
         speedRunData.remove(type);
     }
 
-    public final void loadSpeedRuns() throws SQLException {
-        if (speedRunData.size() > 0) {
-            return;
-        }
-        for (SpeedRunType type : SpeedRunType.values()) {
-            loadSpeedRunData(type);
+    public final void loadSpeedRuns() {
+        try {
+            if (speedRunData.size() > 0) {
+                return;
+            }
+            for (SpeedRunType type : SpeedRunType.values()) {
+                loadSpeedRunData(type);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 

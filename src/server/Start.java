@@ -16,8 +16,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.PreparedStatement;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import server.Timer.*;
 import server.events.MapleOxQuizFactory;
 import server.life.MapleLifeFactory;
@@ -26,6 +24,7 @@ import server.quest.MapleQuest;
 public class Start {
 
     public final static void main(final String args[]) {
+        final long originStartTime = System.currentTimeMillis();
         if (Boolean.parseBoolean(ServerProperties.getProperty("tms.Admin"))) {
             System.out.println("[!!! 管理員模式 !!!]");
         }
@@ -56,10 +55,10 @@ public class Start {
         MapleLifeFactory.loadQuestCounts();
 //        ItemMakerFactory.getInstance();
         MapleItemInformationProvider.getInstance().load();
-        System.out.println("[載入髮型臉部物件]");
-        MapleItemInformationProvider.getInstance().loadStyles(false);
+        new Thread(() -> MapleItemInformationProvider.getInstance().loadStyles(false)).start();
+        new Thread(() -> CashItemFactory.getInstance().initialize()).start();
         RandomRewards.getInstance();
-        SkillFactory.getSkill(99999999);
+        SkillFactory.initializeSkillInfo();
         MapleOxQuizFactory.getInstance().initialize();
         MapleCarnivalFactory.getInstance();
         MapleGuildRanking.getInstance().getRank();
@@ -67,24 +66,21 @@ public class Start {
         //MapleServerHandler.registerMBean();
         RankingWorker.getInstance().run();
         MTSStorage.load();
-        CashItemFactory.getInstance().initialize();
+
         LoginServer.run_startup_configurations();
         ChannelServer.startChannel_Main();
 
-        System.out.println("[購物商城伺服器啟動中]");
         CashShopServer.run_startup_configurations();
-        System.out.println("[購物商城伺服器啟動完成]");
+
         CheatTimer.getInstance().register(AutobanManager.getInstance(), 60000);
         Runtime.getRuntime().addShutdownHook(new Thread(ShutdownServer.getInstance()));
-        try {
-            SpeedRunner.getInstance().loadSpeedRuns();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        SpeedRunner.getInstance().loadSpeedRuns();
         World.registerRespawn();
         LoginServer.setOn();
-        System.out.println("加載完成 :::");
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        System.out.println("載入完成 :::");
+        System.out.println("啟動時間: " + tools.StringUtil.getReadableMillis(originStartTime, System.currentTimeMillis()));
+        ChannelServer.loadEventScriptManager(); // 啟動完成後再載入活動
+//        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         System.gc();
         PingTimer.getInstance().register(System::gc, 1800000);
     }

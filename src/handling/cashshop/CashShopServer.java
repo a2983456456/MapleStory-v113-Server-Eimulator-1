@@ -44,7 +44,7 @@ public class CashShopServer {
             init.run();
             players = new PlayerStorage(-10);
             playersMTS = new PlayerStorage(-20);
-            System.out.println("Shop    1: Listening on port " + PORT);
+            System.out.println("CashShop : Listening on port " + PORT);
         } catch (final Exception e) {
             System.err.println("綁定端口 " + PORT + " 失敗");
             e.printStackTrace();
