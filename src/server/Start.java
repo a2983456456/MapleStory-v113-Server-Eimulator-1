@@ -33,7 +33,7 @@ public class Start {
             ps.executeUpdate();
             ps.close();
         } catch (SQLException ex) {
-            throw new RuntimeException("[EXCEPTION] Please check if the SQL server is active.");
+            throw new RuntimeException("[發生錯誤] 請檢查MySql連線." + System.lineSeparator() + ex.getLocalizedMessage());
         }
         if (System.getProperty("net.sf.odinms.wzpath") == null) { // auto initialize path by Windyboy
             System.setProperty("net.sf.odinms.wzpath", "wz");
