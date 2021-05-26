@@ -292,10 +292,6 @@ public class EventManager {
             return; //we dont like cleared squads
         }
         if (!squad.getLeader().isGM()) {
-            if (squad.getMembers().size() < squad.getType().i) { //less than 3
-                squad.getLeader().dropMessage(5, "這個遠征隊至少要有 " + squad.getType().i + " 人以上才可以開戰.");
-                return;
-            }
             if (name.equals("CWKPQ") && squad.getJobs().size() < 5) {
                 squad.getLeader().dropMessage(5, "The squad requires members from every type of job.");
                 return;
