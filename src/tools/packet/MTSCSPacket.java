@@ -595,7 +595,7 @@ public class MTSCSPacket {
         final MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
 
         mplew.writeShort(SendPacketOpcode.MTS_OPERATION.getValue());
-        mplew.write(0x15); //operation
+        mplew.write(0x14); //operation
         mplew.writeInt(pages * 16); //total items
         mplew.writeInt(items.size()); //number of items on this page
         mplew.writeInt(tab);
