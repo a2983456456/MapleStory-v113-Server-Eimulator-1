@@ -117,25 +117,15 @@ public class InventoryHandler {
         final MapleInventory pInv = c.getPlayer().getInventory(pInvType); //Mode should correspond with MapleInventoryType
         boolean sorted = false;
 
-        while (!sorted) {
-            final byte freeSlot = (byte) pInv.getNextFreeSlot();
-            if (freeSlot != -1) {
-                byte itemSlot = -1;
-                for (byte i = (byte) (freeSlot + 1); i <= pInv.getSlotLimit(); i++) {
-                    if (pInv.getItem(i) != null) {
-                        itemSlot = i;
-                        break;
-                    }
-                }
-                if (itemSlot > 0) {
-                    MapleInventoryManipulator.move(c, pInvType, itemSlot, freeSlot);
-                } else {
-                    sorted = true;
-                }
-            } else {
-                sorted = true;
+        int id1,id2;
+        for(byte i = 1;i<pInv.getSlotLimit();i++)
+            for(byte j=(byte)(i+1);j<=pInv.getSlotLimit();j++){
+                if(pInv.getItem(i)==null)
+                    MapleInventoryManipulator.move(c, pInvType, j, i);
+                else if(pInv.getItem(j)!=null && pInv.getItem(i).getItemId()>pInv.getItem(j).getItemId())
+                    MapleInventoryManipulator.move(c, pInvType, i, j);
             }
-        }
+
         c.sendPacket(MaplePacketCreator.finishedSort(pInvType.getType()));
         c.sendPacket(MaplePacketCreator.enableActions());
     }

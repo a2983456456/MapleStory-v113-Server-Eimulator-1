@@ -459,6 +459,8 @@ public class MapleServerHandler extends ChannelInboundHandlerAdapter {
     }
 
     public static final void handlePacket(final RecvPacketOpcode header, final SeekableLittleEndianAccessor slea, final MapleClient c, final boolean cs) throws Exception {
+        if(c.getPlayer().isGM())
+            c.getPlayer().dropMessage(header.name());
         switch (header) {
             case PONG:
                 c.pongReceived();

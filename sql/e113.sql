@@ -14,13 +14,13 @@ CREATE TABLE `accounts` (
   `loggedin` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `lastlogin` timestamp NULL DEFAULT NULL,
   `createdat` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `birthday` date NOT NULL DEFAULT '0000-00-00',
+  `birthday` date NOT NULL DEFAULT '1970-01-02',
   `banned` tinyint(1) NOT NULL DEFAULT '0',
   `banreason` text,
   `gm` tinyint(1) NOT NULL DEFAULT '0',
   `email` tinytext,
   `macs` tinytext,
-  `tempban` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `tempban` timestamp NOT NULL DEFAULT '1970-01-02 00:00:00',
   `greason` tinyint(4) unsigned DEFAULT NULL,
   `ACash` int(11) DEFAULT NULL,
   `mPoints` int(11) DEFAULT NULL,
@@ -36436,7 +36436,7 @@ CREATE TABLE `zaksquads` (
 -- View structure for readable_cheatlog
 -- ----------------------------
 DROP VIEW IF EXISTS `readable_cheatlog`;
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER  VIEW `readable_cheatlog` AS select `a`.`name` AS `accountname`,`a`.`id` AS `accountid`,`c`.`name` AS `name`,`c`.`id` AS `characterid`,`cl`.`offense` AS `offense`,`cl`.`count` AS `count`,`cl`.`lastoffensetime` AS `lastoffensetime`,`cl`.`param` AS `param` from ((`cheatlog` `cl` join `characters` `c`) join `accounts` `a`) where ((`cl`.`id` = `c`.`id`) and (`a`.`id` = `c`.`accountid`) and (`a`.`banned` = 0)) ; ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER  VIEW `readable_cheatlog` AS select `a`.`name` AS `accountname`,`a`.`id` AS `accountid`,`c`.`name` AS `name`,`c`.`id` AS `characterid`,`cl`.`offense` AS `offense`,`cl`.`count` AS `count`,`cl`.`lastoffensetime` AS `lastoffensetime`,`cl`.`param` AS `param` from ((`cheatlog` `cl` join `characters` `c`) join `accounts` `a`) where ((`cl`.`id` = `c`.`id`) and (`a`.`id` = `c`.`accountid`) and (`a`.`banned` = 0)) ; 
 
 -- ----------------------------
 -- View structure for readable_last_hour_cheatlog

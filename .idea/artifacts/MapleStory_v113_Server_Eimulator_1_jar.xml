@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="MapleStory-v113-Server-Eimulator-1:jar">
+    <output-path>$PROJECT_DIR$/dist/</output-path>
+    <root id="archive" name="MapleStory-v113-Server-Eimulator-1.jar">
+      <element id="module-output" name="MapleStory-v113-Server-Eimulator-1" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/dist/US_export_policy.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/dist/local_policy.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/dist/mysql-connector-java-bin.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/dist/netty-all-4.1.65.Final.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/dist/slf4j-api.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/dist/slf4j-jdk14.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
